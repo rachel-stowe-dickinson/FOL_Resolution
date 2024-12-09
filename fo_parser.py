@@ -47,7 +47,7 @@ class Resolver:
                 forallvalues = []
                 print('Skolemizing',i.left.value)
                 self.find_forall_variables(clause,forallvalues,i.left.value)
-                print('''choose as a function of following variables. For example: to skolemize y as a f(x) enter f x''')
+                print('''choose as a function of following variables. For example: to skolemize y as a f(x) enter f x. If there are multiple variables enter as f x,y,z''')
                 print(forallvalues)
 
                 skolem = input()
