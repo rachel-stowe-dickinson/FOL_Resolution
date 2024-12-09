@@ -41,22 +41,26 @@ class Resolver:
     def skolemizer(self, clause, nodes):
         
         
-        print('Variables to skolemize')
+        print('** Skolemization **')
         for index, i in enumerate(nodes):
             if i.value=="exists":
                 forallvalues = []
                 print('Skolemizing',i.left.value)
                 self.find_forall_variables(clause,forallvalues,i.left.value)
-                print('''choose as a function of following variables. For example: to skolemize y as a f(x) enter f x. If there are multiple variables enter as f x,y,z''')
+                print('''choose as a function of following variables. For example: to skolemize y as a f(x) enter f x. If there are multiple variables enter as f x,y,z. If there are no unversal quantifier before this, choose a constant For example: to replace x with c, enter c''')
                 print(forallvalues)
+                if len(forallvalues)==0:
+                    value = input()
+                    replace = value
+                    print(f'Replacing {i.left.value} with {replace}')
+                else:
+                    skolem = input()
+                    skolem = skolem.split(' ')
+                    function = skolem[0]
+                    variable = skolem[1]
 
-                skolem = input()
-                skolem = skolem.split(' ')
-                function = skolem[0]
-                variable = skolem[1]
-
-                replace = f'{function}({variable})'
-                print(f'Replacing {i.left.value} with {replace}')
+                    replace = f'{function}({variable})'
+                    print(f'Replacing {i.left.value} with {replace}')
                 
                 i.replacer(i,i.left.value,replace)
                 clause = self.remove_specific_node(clause,i)
@@ -224,33 +228,24 @@ if __name__ == "__main__":
         inorder_nodes=[]
         clause.printTree(clause, inorder, inorder_nodes)
         print(inorder)
-
-        for i, value in enumerate(inorder):
-            if len(inorder)==1:
-                s = f"{{{value}}}"
-                clauses_to_resolve+=s
-                continue
-            if value=='or':
-                left = inorder[i-1]
-                right = inorder[i+1]
-                s = f"{{{left};{right}}}"
-                clauses_to_resolve+=s
+        res = "{"
+        for term in inorder[:-1]:
+            if term!='or':
+                res+=term+";"
+        res+=inorder[-1]+"}"
+        clauses_to_resolve+=res
     for clause in targets:
         inorder=[]
         inorder_nodes=[]
         clause.printTree(clause, inorder, inorder_nodes)
         print(inorder)
 
-        for i, value in enumerate(inorder):
-            if len(inorder)==1:
-                s = f"{{{value}}}"
-                clauses_to_resolve+=s
-                continue
-            if value=='or':
-                left = inorder[i-1]
-                right = inorder[i+1]
-                s = f"{{{left};{right}}}"
-                clauses_to_resolve+=s
+        res = "{"
+        for term in inorder[:-1]:
+            if term!='or':
+                res+=term+";"
+        res+=inorder[-1]+"}"
+        clauses_to_resolve+=res
     #TO-DO: find clauses combined by and
     #check user skolemized equivlent to z3 skolemized
     #to cnf
