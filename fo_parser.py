@@ -181,6 +181,16 @@ if __name__ == "__main__":
         print(inorder)
 
         skolemized_clauses.append(r.skolemizer(clause, inorder_nodes))
+
+    #skolemizing targets as well
+    
+    for clause in targets:
+        inorder=[]
+        inorder_nodes = []
+        clause.printTree(clause,inorder,inorder_nodes)
+        print(inorder)
+
+        skolemized_clauses.append(r.skolemizer(clause, inorder_nodes))
     print('Here are the skolemized clauses:')
     r = Resolver(skolemized_clauses)
     new_clauses = []
@@ -197,15 +207,9 @@ if __name__ == "__main__":
         inorder_nodes = []
         clause.printTree(clause,inorder,inorder_nodes)
         print(' '.join(inorder))
-    print('and target theorem(s)')
-    for target in targets:
-
-        inorder = []
-        inorder_nodes = []
-        target.printTree(target, inorder, inorder_nodes)
-        print(' '.join(inorder))
     
-    print('Unification')
+    
+    print('** Unification **')
     print('Iteratively choose clauses to unify on. Press \'done\' when done')
     while (True):
         print('choose variable and what to replace it with. For example: to replace x with a, enter x a. Press \'done\' when done')
@@ -234,22 +238,8 @@ if __name__ == "__main__":
                 res+=term+";"
         res+=inorder[-1]+"}"
         clauses_to_resolve+=res
-    for clause in targets:
-        inorder=[]
-        inorder_nodes=[]
-        clause.printTree(clause, inorder, inorder_nodes)
-        print(inorder)
-
-        res = "{"
-        for term in inorder[:-1]:
-            if term!='or':
-                res+=term+";"
-        res+=inorder[-1]+"}"
-        clauses_to_resolve+=res
-    #TO-DO: find clauses combined by and
-    #check user skolemized equivlent to z3 skolemized
-    #to cnf
-    #send it to resolution.py resolve
+    
+    
     print('Clauses to resolve')
     print(clauses_to_resolve)
     out = process_cnf_input(clauses_to_resolve)
