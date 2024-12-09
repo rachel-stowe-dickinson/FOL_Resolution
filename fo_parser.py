@@ -226,10 +226,14 @@ if __name__ == "__main__":
         print(inorder)
 
         for i, value in enumerate(inorder):
+            if len(inorder)==1:
+                s = f"{{{value}}}"
+                clauses_to_resolve+=s
+                continue
             if value=='or':
                 left = inorder[i-1]
                 right = inorder[i+1]
-                s = f"{{{left},{right}}}"
+                s = f"{{{left};{right}}}"
                 clauses_to_resolve+=s
     for clause in targets:
         inorder=[]
@@ -245,7 +249,7 @@ if __name__ == "__main__":
             if value=='or':
                 left = inorder[i-1]
                 right = inorder[i+1]
-                s = f"{{{left},{right}}}"
+                s = f"{{{left};{right}}}"
                 clauses_to_resolve+=s
     #TO-DO: find clauses combined by and
     #check user skolemized equivlent to z3 skolemized

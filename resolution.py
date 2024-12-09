@@ -263,7 +263,7 @@ def process_cnf_input(formula):
         elif expect == "ident":
             if curr_ident == None:
                 curr_ident = ""
-            if c == ',' or c == '}':
+            if c == ';' or c == '}':
                 if curr_ident == "":
                     format_error(formula, i, "Literal cannot be empty")
                 curr_clause.append(curr_ident)
@@ -286,7 +286,7 @@ def process_cnf_input(formula):
                     format_error(formula, i, "Must use negation symbol ! only at the beginning of the literal")
                 curr_ident = curr_ident + c
         elif expect == "ident_end":
-            if c == ',':
+            if c == ';':
                 assert curr_ident is None, "Code not behaving as expected. Lord save you." # Should always hold, just here for safety check
                 expect = "ident"
             elif c == '}':
