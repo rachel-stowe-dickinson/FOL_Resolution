@@ -40,8 +40,9 @@ class Resolver:
 
     def skolemizer(self, clause, nodes):
         
-        
-
+        inorder = []
+        clause.printTree(clause, inorder, inorder_nodes=[])
+        print('Clause: ',' '.join(inorder))
         for index, i in enumerate(nodes):
             if i.value=="exists":
                 forallvalues = []
@@ -190,7 +191,7 @@ Type 'done' when done entering FO logic formulae. """
 
     
 
-    print('\n**Skolemization**')
+    print('\n** Skolemization **')
 
     skolemized_clauses = []
     r = Resolver(clauses)
@@ -264,7 +265,7 @@ Type 'done' when done entering FO logic formulae. """
         res = "{"
         for term in inorder[:-1]:
             if term!='or':
-                res+=term+","
+                res+=term+";"
         res+=inorder[-1]+"}"
         clauses_to_resolve+=res
 
