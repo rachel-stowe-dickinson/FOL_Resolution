@@ -116,10 +116,12 @@ def print_state():
 # Main resolution checker interface
 def resolve(formula):
     welcome_message = """
-Apply resolution rules by providing clause numbers and the literal on which you want to resolve, e.g.
-1:{x, y} 2:{!x, z}
->> 1 2 x
-1:{y, z}
+
+Apply resolution rules by providing clause numbers and the function on which you want to resolve, e.g.
+1:{p(x), p(y)} 2:{!p(x), p(z)}
+>> 1 2 p(x)
+1:{p(x), p(y)} 2:{!p(x), p(z)} 3:{p(y), p(z)}
+
 Enter 'b' to backtrack, and 'done' to indicate that you have saturated resolution steps.
 Enter 'help' to display this message.""" 
    

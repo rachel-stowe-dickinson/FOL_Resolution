@@ -41,28 +41,34 @@ class Resolver:
     def skolemizer(self, clause, nodes):
         
         
-        print('** Skolemization **')
+
         for index, i in enumerate(nodes):
             if i.value=="exists":
                 forallvalues = []
-                print('Skolemizing',i.left.value)
-                self.find_forall_variables(clause,forallvalues,i.left.value)
-                print('''choose as a function of following variables. For example: to skolemize y as a f(x) enter f x. If there are multiple variables enter as f x,y,z. If there are no unversal quantifier before this, choose a constant For example: to replace x with c, enter c''')
-                print(forallvalues)
-                if len(forallvalues)==0:
-                    value = input()
-                    replace = value
-                    print(f'Replacing {i.left.value} with {replace}')
-                else:
-                    skolem = input()
-                    skolem = skolem.split(' ')
-                    function = skolem[0]
-                    variable = skolem[1]
-
-                    replace = f'{function}({variable})'
-                    print(f'Replacing {i.left.value} with {replace}')
+                variables = i.left.value.split(',')
+                for v in variables:
+                    print('Skolemizing',v)
+                    self.find_forall_variables(clause,forallvalues,v)
+                    print(f"Replace {v} with a function of the following variables, {forallvalues}, or if there are no universally quantified variables, replace with a constant. \
+                          \nFor example, to replace x with f(y), enter 'f y' \
+                          \nTo replace x with a function of multiple variables, enter 'f x,y,z,...' \
+                          \nTo replace x with a constant c, enter 'c'")
+                    #print(forallvalues)
+                    if len(forallvalues)==0:
+                        value = input()
+                        replace = value
+                        print(f'Replacing {v} with {replace}')
+                    else:
+                        skolem = input()
+                        skolem = skolem.split(' ')
+                        function = skolem[0]
+                        variable = skolem[1]
+                        replace = f'{function}({variable})'
+                        print(f'Replacing {v} with {replace}')
                 
-                i.replacer(i,i.left.value,replace)
+                    i.replacer(i,v,replace)
+
+  
                 clause = self.remove_specific_node(clause,i)
         return clause    
 
@@ -151,7 +157,17 @@ class TreeBuilder:
 
 if __name__ == "__main__":
     treeBuilder = TreeBuilder()
-    welcome = """Welcome to first order logic resolution tool. Input FO logic formulae only in terms of forall, exists, and, or and negation. Input done when done with the FO logic formulae """
+
+    welcome = """Welcome to first order logic resolution tool.
+Input FO logic formulae in CNF form by pressing ENTER between clauses.
+Please input clauses in the the following format:
+    p(x,y,...)
+    p(x,y,...) or p(x,y,...)
+    !p(x,y,...)
+    exists x,y,... p(x,y,...)...
+    forall x,y,... p(x,y,...)...
+Type 'done' when done entering FO logic formulae. """
+
     print(welcome)
     clauses = []
     clause = ""
@@ -161,7 +177,9 @@ if __name__ == "__main__":
             break
 
         clauses.append(treeBuilder.build_tree(clause))
-    print('Negate and Enter target theorem(s) Example: !p(x) and !q(x) should be input !p(x) \enter !q(x)')
+
+    print("\nInput negated target theorem in CNF form by pressing ENTER between conjunctions.\nType 'done' when done entering target theorem.")
+
     targets = []
     while(True):
         s = input()
@@ -171,27 +189,31 @@ if __name__ == "__main__":
         targets.append(target)
 
     
-    print('Skolemization')
+
+    print('\n**Skolemization**')
+
     skolemized_clauses = []
     r = Resolver(clauses)
     for clause in clauses:
         inorder=[]
         inorder_nodes = []
         clause.printTree(clause,inorder,inorder_nodes)
-        print(inorder)
 
+        #print(inorder)
         skolemized_clauses.append(r.skolemizer(clause, inorder_nodes))
 
     #skolemizing targets as well
-    
+
     for clause in targets:
         inorder=[]
         inorder_nodes = []
         clause.printTree(clause,inorder,inorder_nodes)
-        print(inorder)
 
+        #print(inorder)
         skolemized_clauses.append(r.skolemizer(clause, inorder_nodes))
-    print('Here are the skolemized clauses:')
+
+    print('\nHere are the skolemized clauses:')
+
     r = Resolver(skolemized_clauses)
     new_clauses = []
     for clause in skolemized_clauses:
@@ -207,12 +229,13 @@ if __name__ == "__main__":
         inorder_nodes = []
         clause.printTree(clause,inorder,inorder_nodes)
         print(' '.join(inorder))
+
+ 
     
-    
-    print('** Unification **')
-    print('Iteratively choose clauses to unify on. Press \'done\' when done')
+    print('\n** Unification **')
     while (True):
-        print('choose variable and what to replace it with. For example: to replace x with a, enter x a. Press \'done\' when done')
+        print("Choose variable and what to replace it with. For example: to replace x with a, enter 'x a'. Type 'done' when done.")
+
         s =  input()
         if s== 'done':
             break
@@ -220,27 +243,34 @@ if __name__ == "__main__":
         
         var= s[0]
         replace= s[1]
+
+        print("Unified clauses:")
+
         for clause in new_clauses:
             clause.replacer(clause,var,replace)
             inorder=[]
             inorder_nodes=[]
             clause.printTree(clause, inorder, inorder_nodes)
-            print(inorder)
+
+            print(' '.join(inorder))
+
     clauses_to_resolve = ""
     for clause in new_clauses:
         inorder=[]
         inorder_nodes=[]
         clause.printTree(clause, inorder, inorder_nodes)
-        print(inorder)
+
+        #print(inorder)
         res = "{"
         for term in inorder[:-1]:
             if term!='or':
-                res+=term+";"
+                res+=term+","
         res+=inorder[-1]+"}"
         clauses_to_resolve+=res
-    
-    
-    print('Clauses to resolve')
+
+    #send it to resolution.py resolve
+    print('\nClauses to resolve:')
+
     print(clauses_to_resolve)
     out = process_cnf_input(clauses_to_resolve)
     resolve(out)
