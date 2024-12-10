@@ -41,6 +41,7 @@ class Resolver:
     def skolemizer(self, clause, nodes):
         
         
+
         for index, i in enumerate(nodes):
             if i.value=="exists":
                 forallvalues = []
@@ -66,6 +67,8 @@ class Resolver:
                         print(f'Replacing {v} with {replace}')
                 
                     i.replacer(i,v,replace)
+
+  
                 clause = self.remove_specific_node(clause,i)
         return clause    
 
@@ -154,6 +157,7 @@ class TreeBuilder:
 
 if __name__ == "__main__":
     treeBuilder = TreeBuilder()
+
     welcome = """Welcome to first order logic resolution tool.
 Input FO logic formulae in CNF form by pressing ENTER between clauses.
 Please input clauses in the the following format:
@@ -163,6 +167,7 @@ Please input clauses in the the following format:
     exists x,y,... p(x,y,...)...
     forall x,y,... p(x,y,...)...
 Type 'done' when done entering FO logic formulae. """
+
     print(welcome)
     clauses = []
     clause = ""
@@ -172,7 +177,9 @@ Type 'done' when done entering FO logic formulae. """
             break
 
         clauses.append(treeBuilder.build_tree(clause))
+
     print("\nInput negated target theorem in CNF form by pressing ENTER between conjunctions.\nType 'done' when done entering target theorem.")
+
     targets = []
     while(True):
         s = input()
@@ -182,25 +189,31 @@ Type 'done' when done entering FO logic formulae. """
         targets.append(target)
 
     
+
     print('\n**Skolemization**')
+
     skolemized_clauses = []
     r = Resolver(clauses)
     for clause in clauses:
         inorder=[]
         inorder_nodes = []
         clause.printTree(clause,inorder,inorder_nodes)
+
         #print(inorder)
         skolemized_clauses.append(r.skolemizer(clause, inorder_nodes))
 
     #skolemizing targets as well
+
     for clause in targets:
         inorder=[]
         inorder_nodes = []
         clause.printTree(clause,inorder,inorder_nodes)
+
         #print(inorder)
         skolemized_clauses.append(r.skolemizer(clause, inorder_nodes))
 
     print('\nHere are the skolemized clauses:')
+
     r = Resolver(skolemized_clauses)
     new_clauses = []
     for clause in skolemized_clauses:
@@ -216,11 +229,13 @@ Type 'done' when done entering FO logic formulae. """
         inorder_nodes = []
         clause.printTree(clause,inorder,inorder_nodes)
         print(' '.join(inorder))
+
  
     
     print('\n** Unification **')
     while (True):
         print("Choose variable and what to replace it with. For example: to replace x with a, enter 'x a'. Type 'done' when done.")
+
         s =  input()
         if s== 'done':
             break
@@ -228,18 +243,23 @@ Type 'done' when done entering FO logic formulae. """
         
         var= s[0]
         replace= s[1]
+
         print("Unified clauses:")
+
         for clause in new_clauses:
             clause.replacer(clause,var,replace)
             inorder=[]
             inorder_nodes=[]
             clause.printTree(clause, inorder, inorder_nodes)
+
             print(' '.join(inorder))
+
     clauses_to_resolve = ""
     for clause in new_clauses:
         inorder=[]
         inorder_nodes=[]
         clause.printTree(clause, inorder, inorder_nodes)
+
         #print(inorder)
         res = "{"
         for term in inorder[:-1]:
@@ -250,6 +270,7 @@ Type 'done' when done entering FO logic formulae. """
 
     #send it to resolution.py resolve
     print('\nClauses to resolve:')
+
     print(clauses_to_resolve)
     out = process_cnf_input(clauses_to_resolve)
     resolve(out)
