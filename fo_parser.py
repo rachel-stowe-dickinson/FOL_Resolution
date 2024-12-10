@@ -271,8 +271,8 @@ Type 'done' when done entering FO logic formulae. """
 
     #send it to resolution.py resolve
     print('\nClauses to resolve:')
-
-    print(clauses_to_resolve)
+    clauses_to_resolve_copy = clauses_to_resolve.replace(';',',')
+    print(clauses_to_resolve_copy)
     out = process_cnf_input(clauses_to_resolve)
     resolve(out)
 
