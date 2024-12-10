@@ -160,7 +160,7 @@ if __name__ == "__main__":
     treeBuilder = TreeBuilder()
 
     welcome = """Welcome to first order logic resolution tool.
-Input FO logic formulae in CNF form by pressing ENTER between clauses.
+Input FO logic formulae in CNF and prenex normal form by pressing ENTER between clauses.
 Please input clauses in the the following format:
     p(x,y,...)
     p(x,y,...) or p(x,y,...)
@@ -179,7 +179,7 @@ Type 'done' when done entering FO logic formulae. """
 
         clauses.append(treeBuilder.build_tree(clause))
 
-    print("\nInput negated target theorem in CNF form by pressing ENTER between conjunctions.\nType 'done' when done entering target theorem.")
+    print("\nInput negated target theorem in CNF and prenex normal form by pressing ENTER between conjunctions.\nType 'done' when done entering target theorem.")
 
     targets = []
     while(True):
