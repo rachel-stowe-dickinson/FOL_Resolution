@@ -92,7 +92,7 @@ def proof_step(cl_index1, cl_index2, literal):
     parentdict[clause_counter] = [clid1, clid2, base_literal]
     # NOTE: If the list becomes too large, this operation is inefficient. Consider using collections.dequeue
     curr_clauses.insert(len(curr_clauses), clause_counter)
-    return
+    return True
 
 
 # Helper functions
@@ -112,6 +112,70 @@ def print_state():
     actual_clauses = [clausedict[j] for j in curr_clauses]
     print(f"""\n{' '.join([f"{i+1}:{'{'+ ', '.join(sorted(list(cl))) + '}' if cl else '{}'}" for i,cl in enumerate(actual_clauses)])}""")
 
+def find_literal(clause1, clause2):
+    
+    #look for literals in clause1
+    
+    for every in clause1:
+        if '!'+every in clause2:
+            return every
+    #look for literals in clause2 and their negation in clause1
+    
+    for every in clause2:
+        if '!'+every in clause1:
+            return every
+    return None
+#unification step
+def unify():
+    global clause_counter, clausedict, parentdict, curr_clauses
+    print("Enter clause_number_1 clause_number_2 unifier to unify. Enter the unifier as variable to replace = replacement. Example: to unify clauses 1 and 2 by substituting x with b enter 1 2 x=b")
+    command = input(">>").strip()
+    params = command.split()
+    assert len(params) ==3
+    clause1_index = int(params[0])
+    clause2_index = int(params[1])
+    uni_var, uni_sub = params[2].split("=")
+
+    if (not (1 <= clause1_index <= len(curr_clauses))) or (not (1 <= clause2_index <= len(curr_clauses))):
+        print(f"Clause numbers must correspond to existing clauses [1-{len(curr_clauses)}]")
+        return
+
+    clid1 = curr_clauses[clause1_index-1]
+    clid2 = curr_clauses[clause2_index-1]
+    # Check if clause ids make sense
+    if clid1 not in clausedict:
+        print(f"Number {clid1} does not correspond to any clause")
+        return
+    if clid2 not in clausedict:
+        print(f"Number {clid2} does not correspond to any clause")
+        return
+    # get the corresponding clauses
+    clause1 = clausedict[clid1]
+    clause2 = clausedict[clid2]
+
+    clause3 = set([x.replace(uni_var,uni_sub) for x in clause1])
+    clause4 = set([x.replace(uni_var,uni_sub) for x in clause2])
+
+    clause_counter += 1
+    clausedict[clause_counter] = clause3
+    curr_clauses.insert(len(curr_clauses), clause_counter)
+    clause1_index = clause_counter
+
+    clause_counter += 1
+    clausedict[clause_counter] = clause4
+    curr_clauses.insert(len(curr_clauses), clause_counter)
+    clause2_index = clause_counter
+
+    literal = find_literal(clause3, clause4)
+    if literal is None:
+        print("Unification step did not result in clauses that can be resolved")
+    print('Resolvent :',literal)
+    new_resolvent = proof_step(clause1_index, clause2_index, literal)
+    if new_resolvent:
+        #clause_counter-=2
+        curr_clauses.remove(clause1_index)
+        curr_clauses.remove(clause2_index)
+    
 
 # Main resolution checker interface
 def resolve(formula):
@@ -121,7 +185,8 @@ Apply resolution rules by providing clause numbers and the function on which you
 1:{p(x), p(y)} 2:{!p(x), p(z)}
 >> 1 2 p(x)
 1:{p(x), p(y)} 2:{!p(x), p(z)} 3:{p(y), p(z)}
-
+Enter unify to unify
+clause_number_1 clause_number_2 unifier to unify
 Enter 'b' to backtrack, and 'done' to indicate that you have saturated resolution steps.
 Enter 'help' to display this message.""" 
    
@@ -142,6 +207,8 @@ Enter 'help' to display this message."""
                 backtrack()
             elif command == "help":
                 print(welcome_message)
+            elif command == "unify":
+                unify()
             else:
                 params = command.split()
                 assert len(params) == 3
