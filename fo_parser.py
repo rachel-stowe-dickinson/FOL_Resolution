@@ -1,5 +1,5 @@
-from collections import deque
 from resolution import resolve, process_cnf_input
+from collections import deque
 class Resolver:
     def __init__(self, clauses):
         self.clauses = clauses
@@ -232,28 +232,6 @@ Type 'done' when done entering FO logic formulae. """
         print(' '.join(inorder))
 
  
-    
-    print('\n** Unification **')
-    while (True):
-        print("Choose variable and what to replace it with. For example: to replace x with a, enter 'x a'. Type 'done' when done.")
-
-        s =  input()
-        if s== 'done':
-            break
-        s = s.split(' ')
-        
-        var= s[0]
-        replace= s[1]
-
-        print("Unified clauses:")
-
-        for clause in new_clauses:
-            clause.replacer(clause,var,replace)
-            inorder=[]
-            inorder_nodes=[]
-            clause.printTree(clause, inorder, inorder_nodes)
-
-            print(' '.join(inorder))
 
     clauses_to_resolve = ""
     for clause in new_clauses:
