@@ -45,6 +45,34 @@ def backtrack():
     curr_clauses = [clid for clid in curr_clauses if clid != latest_clause]
     return
 
+#Attempt to do a step of unification
+def unification_step(clause1, clause2, literal):    
+    global clause_counter, clausedict, parentdict, curr_clauses
+
+    # Check if literal to resolve belongs to both clauses and is negated in one of them
+    base_literal = literal[1:] if literal.startswith('!') else literal
+    negated_literal = '!' + base_literal
+    if not((base_literal in clause1 and negated_literal in clause2) or (base_literal in clause2 and negated_literal in clause1)):
+        print("One of the clauses must contain the literal you provided and the other clause must contain its negation")
+        return
+    
+    # Compute resolvent
+    resolvent = set(lit for lit in list(clause1) + list(clause2) if lit != base_literal and lit != negated_literal)
+    # Determine if resolvent is new and nontrivial
+    if any(resolvent == clausedict[clid] for clid in curr_clauses):
+        print("Resolution resulted in redundant clause")
+        return
+    if any('!' + lit in resolvent for lit in resolvent):
+        print("Resolution resulted in trivial clause")
+        return
+    
+    #print(resolvent)
+    # Index new resolvent and add it to the list of current clauses
+    clause_counter += 1
+    clausedict[clause_counter] = resolvent
+    # NOTE: If the list becomes too large, this operation is inefficient. Consider using collections.dequeue
+    curr_clauses.insert(len(curr_clauses), clause_counter)
+    
 
 # Attempts to do one step of resolution
 # If resolution step does not make sense (e.g., clause numbers or literals make no sense), then it acts as a no op.
@@ -92,7 +120,7 @@ def proof_step(cl_index1, cl_index2, literal):
     parentdict[clause_counter] = [clid1, clid2, base_literal]
     # NOTE: If the list becomes too large, this operation is inefficient. Consider using collections.dequeue
     curr_clauses.insert(len(curr_clauses), clause_counter)
-    return True
+    
 
 
 # Helper functions
@@ -171,25 +199,14 @@ def unify():
     clause3 = set([x.replace(uni_var,uni_sub) for x in clause1])
     clause4 = set([x.replace(uni_var,uni_sub) for x in clause2])
 
-    clause_counter += 1
-    clausedict[clause_counter] = clause3
-    curr_clauses.insert(len(curr_clauses), clause_counter)
-    clause1_index = clause_counter
-
-    clause_counter += 1
-    clausedict[clause_counter] = clause4
-    curr_clauses.insert(len(curr_clauses), clause_counter)
-    clause2_index = clause_counter
-
     literal = find_literal(clause3, clause4)
     if literal is None:
         print("Unification step did not result in clauses that can be resolved")
-    print('Resolvent :',literal)
-    new_resolvent = proof_step(clause1_index, clause2_index, literal)
-    if new_resolvent:
-        #clause_counter-=2
-        curr_clauses.remove(clause1_index)
-        curr_clauses.remove(clause2_index)
+        return
+    print('Resolving on :',literal)
+    unification_step(clause3, clause4, literal)
+    
+        
     
 def res():
     print("""
