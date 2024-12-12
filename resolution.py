@@ -46,7 +46,7 @@ def backtrack():
     return
 
 #Attempt to do a step of unification
-def unification_step(clause1, clause2, literal):    
+def unification_step(clause1, clause2, clid1, clid2, literal):    
     global clause_counter, clausedict, parentdict, curr_clauses
 
     # Check if literal to resolve belongs to both clauses and is negated in one of them
@@ -70,6 +70,7 @@ def unification_step(clause1, clause2, literal):
     # Index new resolvent and add it to the list of current clauses
     clause_counter += 1
     clausedict[clause_counter] = resolvent
+    parentdict[clause_counter] = [clid1, clid2, base_literal]
     # NOTE: If the list becomes too large, this operation is inefficient. Consider using collections.dequeue
     curr_clauses.insert(len(curr_clauses), clause_counter)
     
@@ -204,7 +205,7 @@ def unify():
         print("Unification step did not result in clauses that can be resolved")
         return
     print('Resolving on :',literal)
-    unification_step(clause3, clause4, literal)
+    unification_step(clause3, clause4, clid1, clid2, literal)
     
         
     
@@ -254,7 +255,9 @@ Enter 'back' to backtrack, and 'done' to indicate that you have saturated resolu
             elif command == "unify":
                 unify()
             elif command == "resolve":
-                res()         
+                res()      
+            else:
+                print("Please enter 'resolve', 'unify', 'back', or 'done'.")
         except KeyboardInterrupt:
             exit(0)
         except (AssertionError, ValueError):
