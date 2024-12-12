@@ -110,7 +110,8 @@ def initialize(formula):
 def print_state():
     global clause_counter, clausedict, parentdict, curr_clauses
     actual_clauses = [clausedict[j] for j in curr_clauses]
-    print(f"""\n{' '.join([f"{i+1}:{'{'+ ', '.join(sorted(list(cl))) + '}' if cl else '{}'}" for i,cl in enumerate(actual_clauses)])}""")
+    print("\nClauses:")
+    print(f"""{' '.join([f"{i+1}:{'{'+ ', '.join(sorted(list(cl))) + '}' if cl else '{}'}" for i,cl in enumerate(actual_clauses)])}""")
 
 def find_literal(clause1, clause2):
     
@@ -125,11 +126,25 @@ def find_literal(clause1, clause2):
         if '!'+every in clause1:
             return every
     return None
+
 #unification step
 def unify():
     global clause_counter, clausedict, parentdict, curr_clauses
-    print("Enter clause_number_1 clause_number_2 unifier to unify. Enter the unifier as variable to replace = replacement. Example: to unify clauses 1 and 2 by substituting x with b enter 1 2 x=b")
-    command = input(">>").strip()
+    print("\n**UNIFICATION STEP**\
+            \nApply unification by providing clause numbers and the variables on which you want to unify, e.g.\
+            \n1:{p(x), q(x)} 2:{!p(a)}\
+            \n>> 1 2 x=a\
+            \n1:{p(x), q(x)} 2:{!p(a)} 3:{q(a)}\
+            \nEnter 'b' to go back.")
+    print_state()
+    try:
+        command = input(">> ").strip()    
+        if command == 'b':
+            return   
+    except KeyboardInterrupt:
+        exit(0)
+    except (AssertionError, ValueError):
+        print("Invalid Command")
     params = command.split()
     assert len(params) ==3
     clause1_index = int(params[0])
@@ -176,49 +191,57 @@ def unify():
         curr_clauses.remove(clause1_index)
         curr_clauses.remove(clause2_index)
     
-
-# Main resolution checker interface
-def resolve(formula):
-    welcome_message = """
-
+def res():
+    print("""
+**RESOLUTION STEP**
 Apply resolution rules by providing clause numbers and the function on which you want to resolve, e.g.
 1:{p(x), p(y)} 2:{!p(x), p(z)}
 >> 1 2 p(x)
 1:{p(x), p(y)} 2:{!p(x), p(z)} 3:{p(y), p(z)}
-Enter unify to unify
-clause_number_1 clause_number_2 unifier to unify
-Enter 'b' to backtrack, and 'done' to indicate that you have saturated resolution steps.
-Enter 'help' to display this message.""" 
+Enter 'b' to go back.""")
+    print_state()
+    try:
+        command = input(">> ").strip()    
+        if command == 'b':
+            return   
+    except KeyboardInterrupt:
+        exit(0)
+    except (AssertionError, ValueError):
+        print("Invalid Command")
+    params = command.split()
+    assert len(params) == 3
+    clause1, clause2, literal = int(params[0]), int(params[1]), params[2]
+    proof_step(clause1, clause2, literal)
+
+# Main resolution checker interface
+def resolve(formula):
+    welcome_message = """
+Enter 'resolve' to perform a resolution step.
+Enter 'unify' to perform a unification step.
+Enter 'back' to backtrack, and 'done' to indicate that you have saturated resolution steps.""" 
    
     initialize(formula)    
-    print(welcome_message)
 
-    status_print = True
     while True:
-        if status_print:
-            print_state()
+        print_state()
+        print(welcome_message)
         try:
-            status_print = True
             command = input(">> ").strip()
             if command == "done":
                 end_checker()
                 break
-            elif command == "b":
+            elif command == "back":
                 backtrack()
             elif command == "help":
                 print(welcome_message)
             elif command == "unify":
                 unify()
-            else:
-                params = command.split()
-                assert len(params) == 3
-                clause1, clause2, literal = int(params[0]), int(params[1]), params[2]
-                proof_step(clause1, clause2, literal)
+            elif command == "resolve":
+                res()         
         except KeyboardInterrupt:
             exit(0)
         except (AssertionError, ValueError):
             print("Invalid Command")
-            status_print = False
 
 
 #################################### PROOF OBJECT CHECKER ######################################

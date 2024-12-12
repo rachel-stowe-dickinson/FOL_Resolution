@@ -39,21 +39,27 @@ class Resolver:
         return root
 
     def skolemizer(self, clause, nodes):
-        
-        inorder = []
-        clause.printTree(clause, inorder, inorder_nodes=[])
-        print('Clause: ',' '.join(inorder))
+        message = "\n** SKOLEMIZATION **\
+                    \nReplace each existentially-quantified variable with a function of universally-quantified variables. \
+                    \nIf there are no universally-quantified variables, replace with a constant. \
+                    \nFor example, to replace x with f(y), enter 'f y' \
+                    \nTo replace x with a function of multiple variables, enter 'f x,y,z,...' \
+                    \nTo replace x with a constant c, enter 'c'"
+        printed = False
         for index, i in enumerate(nodes):
             if i.value=="exists":
-                forallvalues = []
+                if printed == False:
+                    print(message)
+                    printed = True
+                inorder = []
+                clause.printTree(i, inorder, inorder_nodes=[])
+                print('\nClause to skolemize:',' '.join(inorder))
                 variables = i.left.value.split(',')
                 for v in variables:
-                    print('Skolemizing',v)
+                    forallvalues = []
                     self.find_forall_variables(clause,forallvalues,v)
-                    print(f"Replace {v} with a function of the following variables, {forallvalues}, or if there are no universally quantified variables, replace with a constant. \
-                          \nFor example, to replace x with f(y), enter 'f y' \
-                          \nTo replace x with a function of multiple variables, enter 'f x,y,z,...' \
-                          \nTo replace x with a constant c, enter 'c'")
+                    print('Universally-quantified variables:', forallvalues)
+                    print('Existential variable to replace:',v)
                     #print(forallvalues)
                     if len(forallvalues)==0:
                         value = input()
@@ -71,7 +77,7 @@ class Resolver:
 
   
                 clause = self.remove_specific_node(clause,i)
-        return clause    
+        return clause 
 
 class Tree:
     def __init__(self):
@@ -94,10 +100,16 @@ class Tree:
     def printTree(self,root, inorder, inorder_nodes):
         if(root == None):
             return
-        self.printTree(root.left,inorder,inorder_nodes)
-        inorder.append(root.value)
-        inorder_nodes.append(root)
-        self.printTree(root.right,inorder,inorder_nodes)
+        if root.value == 'exists' or root.value == 'forall':
+            inorder.append(root.value)
+            inorder_nodes.append(root)
+            self.printTree(root.left,inorder,inorder_nodes)
+            self.printTree(root.right,inorder,inorder_nodes)
+        else:
+            self.printTree(root.left,inorder,inorder_nodes)
+            inorder.append(root.value)
+            inorder_nodes.append(root)
+            self.printTree(root.right,inorder,inorder_nodes)
     def replacer(self, node,value, replace):
         if(node==None):
             return
@@ -177,35 +189,12 @@ Type 'done' when done entering FO logic formulae. """
         if clause=='done':
             break
 
-        clauses.append(treeBuilder.build_tree(clause))
+        clauses.append(treeBuilder.build_tree(clause))   
 
-    print("\nInput negated target theorem in CNF and prenex normal form by pressing ENTER between conjunctions.\nType 'done' when done entering target theorem.")
-
-    targets = []
-    while(True):
-        s = input()
-        if s =="done":
-            break
-        target = treeBuilder.build_tree(s)
-        targets.append(target)
-
-    
-
-    print('\n** Skolemization **')
 
     skolemized_clauses = []
     r = Resolver(clauses)
     for clause in clauses:
-        inorder=[]
-        inorder_nodes = []
-        clause.printTree(clause,inorder,inorder_nodes)
-
-        #print(inorder)
-        skolemized_clauses.append(r.skolemizer(clause, inorder_nodes))
-
-    #skolemizing targets as well
-
-    for clause in targets:
         inorder=[]
         inorder_nodes = []
         clause.printTree(clause,inorder,inorder_nodes)
@@ -248,9 +237,9 @@ Type 'done' when done entering FO logic formulae. """
         clauses_to_resolve+=res
 
     #send it to resolution.py resolve
-    print('\nClauses to resolve:')
-    clauses_to_resolve_copy = clauses_to_resolve.replace(';',',')
-    print(clauses_to_resolve_copy)
+    #print('\nClauses to resolve:')
+    '''clauses_to_resolve_copy = clauses_to_resolve.replace(';',',').replace("}","}\n")
+    print(clauses_to_resolve_copy)'''
     out = process_cnf_input(clauses_to_resolve)
     resolve(out)
 
