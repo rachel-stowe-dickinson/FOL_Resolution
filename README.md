@@ -5,7 +5,7 @@ user that are in CNF and prenex normal form. The user can then skolemize any for
 conducted through a series of resolution and/or unification steps until the user is satisfied with the result. The proof's output will be 
 saved to a JSON file.
 
-Run the file fo_parser.py to begin using the tool.
+Run the file `fo_parser.py` to begin using the tool.
 
 <ins>EXAMPLE</ins>
 
