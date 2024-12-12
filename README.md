@@ -51,7 +51,7 @@ Now, the clauses are:
 To resolve clauses 6 and 7 on r(a), enter:
 6 7 r(a)
 Now, the clauses are:
-\n1:{!q(x), p(f(x))} 2:{!q(x), r(x)} 3:{!q(x), !r(x)} 4:{q(a)} 5:{!p(x)} 6:{r(a)} 7:{!r(a)} 8:{}
+1:{!q(x), p(f(x))} 2:{!q(x), r(x)} 3:{!q(x), !r(x)} 4:{q(a)} 5:{!p(x)} 6:{r(a)} 7:{!r(a)} 8:{}
 
 Since an empty clause has been reached, the resolution proof can be ended by entering:
 done
