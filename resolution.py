@@ -158,7 +158,7 @@ def find_literal(clause1, clause2):
 #unification step
 def unify():
     global clause_counter, clausedict, parentdict, curr_clauses
-    print("**\nUNIFICATION STEP**\
+    print("\n**UNIFICATION STEP**\
             \nApply unification by providing clause numbers and the variables on which you want to unify, e.g.\
             \n1:{p(x), q(x)} 2:{!p(a)}\
             \n>> 1 2 x=a\
