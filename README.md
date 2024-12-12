@@ -53,6 +53,10 @@ The clauses are numbered as follows:
 
 To unify clauses 2 and 4 by replacing x with a, enter:
 ```
+unify
+```
+Then,
+```
 2 4 x=a
 ```
 
@@ -63,6 +67,10 @@ Now, the clauses are:
 
 To unify clauses 3 and 4 by replacing x with a, enter:
 ```
+unify
+```
+Then,
+```
 3 4 x=a
 ```
 Now, the clauses are:
@@ -71,6 +79,10 @@ Now, the clauses are:
 ```
 
 To resolve clauses 6 and 7 on r(a), enter:
+```
+resolve
+```
+Then,
 ```
 6 7 r(a)
 ```
