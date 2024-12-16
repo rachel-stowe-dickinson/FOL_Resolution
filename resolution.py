@@ -13,6 +13,8 @@ clausedict = dict()
 parentdict = dict()
 # Current clauses in the resolution represented by ID numbers
 curr_clauses = []
+# String documentation of each step for output
+steps = []
 
 
 # ITP Resolution Checker functions
@@ -27,11 +29,15 @@ def end_checker():
                     "clausedict": {k:list(v) for k,v in clausedict.items()},
                     "parentdict": parentdict}
         json.dump(contents, fh)
+    
+    print("\nHere are the results of your proof:")
+    for s in steps:
+        print(s)
     return
 
 
 def backtrack():
-    global clause_counter, clausedict, parentdict, curr_clauses
+    global clause_counter, clausedict, parentdict, curr_clauses, steps
     # Latest clause is the one with the highest number, if at all there is one
     latest_clause = max(curr_clauses)
     # If latest clause is already a leaf, then there is nothing to backtrack
@@ -43,6 +49,10 @@ def backtrack():
     del clausedict[latest_clause]
     del parentdict[latest_clause]
     curr_clauses = [clid for clid in curr_clauses if clid != latest_clause]
+    # Remove latest step from output
+    last_step = len(steps)-1
+    steps.pop(last_step)
+    steps.pop(last_step-1)
     return
 
 #Attempt to do a step of unification
@@ -126,7 +136,7 @@ def proof_step(cl_index1, cl_index2, literal):
 
 # Helper functions
 def initialize(formula):
-    global clause_counter, clausedict, parentdict, curr_clauses
+    global clause_counter, clausedict, parentdict, curr_clauses, steps
     if curr_clauses != []:
         print("Something is wrong with the program. Exit (Ctrl+C) now.")
         return
@@ -134,6 +144,10 @@ def initialize(formula):
         clause_counter += 1
         clausedict[clause_counter] = cl
         curr_clauses.append(clause_counter)
+    actual_clauses = [clausedict[j] for j in curr_clauses]
+    steps.append(f"""{' '.join([f"{i+1}:{'{'+ ', '.join(sorted(list(cl))) + '}' if cl else '{}'}" for i,cl in enumerate(actual_clauses)])}""")
+
+    
 
 
 def print_state():
@@ -158,7 +172,7 @@ def find_literal(clause1, clause2):
 
 #unification step
 def unify():
-    global clause_counter, clausedict, parentdict, curr_clauses
+    global clause_counter, clausedict, parentdict, curr_clauses, steps
     print("\n**UNIFICATION STEP**\
             \nApply unification by providing clause numbers and the variables on which you want to unify, e.g.\
             \n1:{p(x), q(x)} 2:{!p(a)}\
@@ -206,7 +220,9 @@ def unify():
         return
     print('Resolving on :',literal)
     unification_step(clause3, clause4, clid1, clid2, literal)
-    
+    steps.append(command)
+    actual_clauses = [clausedict[j] for j in curr_clauses]
+    steps.append(f"""{' '.join([f"{i+1}:{'{'+ ', '.join(sorted(list(cl))) + '}' if cl else '{}'}" for i,cl in enumerate(actual_clauses)])}""")    
         
     
 def res():
@@ -230,6 +246,10 @@ Enter 'b' to go back.""")
     assert len(params) == 3
     clause1, clause2, literal = int(params[0]), int(params[1]), params[2]
     proof_step(clause1, clause2, literal)
+    steps.append(command)
+    actual_clauses = [clausedict[j] for j in curr_clauses]
+    steps.append(f"""{' '.join([f"{i+1}:{'{'+ ', '.join(sorted(list(cl))) + '}' if cl else '{}'}" for i,cl in enumerate(actual_clauses)])}""")    
+
 
 # Main resolution checker interface
 def resolve(formula):
