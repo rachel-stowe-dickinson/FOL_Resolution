@@ -10,85 +10,66 @@ Run the file `fo_parser.py` to begin using the tool.
 <ins>EXAMPLE</ins>
 
 Given the following premises,
-1. $\forall x. (Q(x) \implies \exists y. P(y))$
-2. $\forall x. (Q(x) \implies R(x))$
-3. $\forall x. (R(x) \implies \neg Q(x))$
-4. $Q(a)$
+1. $\forall x,y. (Q(x) \implies \exists z. P(y,z))$
+2. $\forall x. (Q(x))$
 
 Prove:
 
-5. $\exists x. P(x)$
+3. $\exists a,b. P(a,b)$
 
    
 
 After starting the program, input the premises and the negated target formula in CNF and prenex normal form:
 ```
-forall x exists y !q(x) or p(y)
-forall x !q(x) or r(x)
-forall x !r(x) or !q(x)
-q(a)
-forall x !p(x)
+forall x,y exists z !q(x) or p(y,z)
+forall x q(x)
+forall a,b !p(a,b)
 done
 ```
 
-The program will prompt the user to skolemize clause 1. To replace y with f(x), enter:
+The program will prompt the user to skolemize clause 1. To replace z with f(x,y), enter:
 ```
-f x
+f x,y
 ```
 
 The program will now output the following quantifier-free clauses:
 ```
-!q(x) or p(f(x))
-!q(x) or r(x)
-!r(x) or !q(x)
-q(a)
-!p(x)
+!q(x) or p(y,f(x,y))
+q(x)
+!p(a,b)
 ```
 
 Now the program will begin prompting the user to complete resolution/unification steps.
 The clauses are numbered as follows:
 ```
-1:{!q(x), p(f(x))} 2:{!q(x), r(x)} 3:{!q(x), !r(x)} 4:{q(a)} 5:{!p(x)}
+1:{!q(x), p(y,f(x,y))} 2:{q(x)} 3:{!p(a,b)}
 ```
 
-To unify clauses 2 and 4 by replacing x with a, enter:
-```
-unify
-```
-Then,
-```
-2 4 x=a
-```
-
-Now, the clauses are:
-```
-1:{!q(x), p(f(x))} 2:{!q(x), r(x)} 3:{!q(x), !r(x)} 4:{q(a)} 5:{!p(x)} 6:{r(a)}
-```
-
-To unify clauses 3 and 4 by replacing x with a, enter:
-```
-unify
-```
-Then,
-```
-3 4 x=a
-```
-Now, the clauses are:
-```
-1:{!q(x), p(f(x))} 2:{!q(x), r(x)} 3:{!q(x), !r(x)} 4:{q(a)} 5:{!p(x)} 6:{r(a)} 7:{!r(a)}
-```
-
-To resolve clauses 6 and 7 on r(a), enter:
+To resolve clauses 1 and 2 on q(x), enter:
 ```
 resolve
 ```
 Then,
 ```
-6 7 r(a)
+1 2 q(x)
+```
+
+Now, the clauses are:
+```
+1:{!q(x), p(y,f(x,y))} 2:{q(x)} 3:{!p(a,b)} 4:{p(y,f(x,y))}
+```
+
+To unify clauses 3 and 4 by replacing a with y and b with f(x,y), enter:
+```
+unify
+```
+Then,
+```
+>> 3 4 a=y b=f(x,y)
 ```
 Now, the clauses are:
 ```
-1:{!q(x), p(f(x))} 2:{!q(x), r(x)} 3:{!q(x), !r(x)} 4:{q(a)} 5:{!p(x)} 6:{r(a)} 7:{!r(a)} 8:{}
+1:{!q(x), p(y,f(x,y))} 2:{q(x)} 3:{!p(a,b)} 4:{p(y,f(x,y))} 5:{}
 ```
 
 Since an empty clause has been reached, the resolution proof can be ended by entering:
@@ -96,9 +77,15 @@ Since an empty clause has been reached, the resolution proof can be ended by ent
 done
 ```
 
-The user will then be prompted to save the results of the proof in a JSON file.
-
-
+The user will then be prompted to save the results of the proof in a JSON file. 
+Additionally, the steps of the proof will be printed out as follows:
+```
+1:{!q(x), p(y,f(x,y))} 2:{q(x)} 3:{!p(a,b)}
+1 2 q(x)
+1:{!q(x), p(y,f(x,y))} 2:{q(x)} 3:{!p(a,b)} 4:{p(y,f(x,y))}
+3 4 a=y b=f(x,y)
+1:{!q(x), p(y,f(x,y))} 2:{q(x)} 3:{!p(a,b)} 4:{p(y,f(x,y))} 5:{}
+```
 
 
 This project was a collaborative effort by Rachel Dickinson and Aarthy Kesavan Padmanaban. Inspiration for the resolution portion of the
