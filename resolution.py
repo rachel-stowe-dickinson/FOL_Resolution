@@ -13,6 +13,8 @@ clausedict = dict()
 parentdict = dict()
 # Current clauses in the resolution represented by ID numbers
 curr_clauses = []
+# String documentation of each step for output
+steps = []
 
 
 # ITP Resolution Checker functions
@@ -27,11 +29,15 @@ def end_checker():
                     "clausedict": {k:list(v) for k,v in clausedict.items()},
                     "parentdict": parentdict}
         json.dump(contents, fh)
+    
+    print("\nHere are the results of your proof:")
+    for s in steps:
+        print(s)
     return
 
 
 def backtrack():
-    global clause_counter, clausedict, parentdict, curr_clauses
+    global clause_counter, clausedict, parentdict, curr_clauses, steps
     # Latest clause is the one with the highest number, if at all there is one
     latest_clause = max(curr_clauses)
     # If latest clause is already a leaf, then there is nothing to backtrack
@@ -43,21 +49,30 @@ def backtrack():
     del clausedict[latest_clause]
     del parentdict[latest_clause]
     curr_clauses = [clid for clid in curr_clauses if clid != latest_clause]
+    # Remove latest step from output
+    last_step = len(steps)-1
+    steps.pop(last_step)
+    steps.pop(last_step-1)
     return
 
 #Attempt to do a step of unification
-def unification_step(clause1, clause2, clid1, clid2, literal):    
+def unification_step(clause1, clause2, clid1, clid2, literals):    
     global clause_counter, clausedict, parentdict, curr_clauses
 
-    # Check if literal to resolve belongs to both clauses and is negated in one of them
-    base_literal = literal[1:] if literal.startswith('!') else literal
-    negated_literal = '!' + base_literal
-    if not((base_literal in clause1 and negated_literal in clause2) or (base_literal in clause2 and negated_literal in clause1)):
-        print("One of the clauses must contain the literal you provided and the other clause must contain its negation")
-        return
+    # Check if literals to resolve belong to both clauses and are negated in one of them
+    base_literals = []
+    negated_literals = []
+    for i in range(len(literals)):
+        base_literal = literals[i][1:] if literals[i].startswith('!') else literals[i]
+        negated_literal = '!' + base_literal
+        base_literals.append(base_literal)
+        negated_literals.append(negated_literal)
+        if not((base_literal in clause1 and negated_literal in clause2) or (base_literal in clause2 and negated_literal in clause1)):
+            print("One of the clauses must contain the literal you provided and the other clause must contain its negation")
+            return
     
     # Compute resolvent
-    resolvent = set(lit for lit in list(clause1) + list(clause2) if lit != base_literal and lit != negated_literal)
+    resolvent = set(lit for lit in list(clause1) + list(clause2) if lit not in base_literals and lit not in negated_literals)
     # Determine if resolvent is new and nontrivial
     if any(resolvent == clausedict[clid] for clid in curr_clauses):
         print("Resolution resulted in redundant clause")
@@ -126,7 +141,7 @@ def proof_step(cl_index1, cl_index2, literal):
 
 # Helper functions
 def initialize(formula):
-    global clause_counter, clausedict, parentdict, curr_clauses
+    global clause_counter, clausedict, parentdict, curr_clauses, steps
     if curr_clauses != []:
         print("Something is wrong with the program. Exit (Ctrl+C) now.")
         return
@@ -134,6 +149,10 @@ def initialize(formula):
         clause_counter += 1
         clausedict[clause_counter] = cl
         curr_clauses.append(clause_counter)
+    actual_clauses = [clausedict[j] for j in curr_clauses]
+    steps.append(f"""{' '.join([f"{i+1}:{'{'+ ', '.join(sorted(list(cl))) + '}' if cl else '{}'}" for i,cl in enumerate(actual_clauses)])}""")
+
+    
 
 
 def print_state():
@@ -156,14 +175,28 @@ def find_literal(clause1, clause2):
             return every
     return None
 
+def find_literals(clause1, clause2):
+    literals = []
+    #look for literals in clause1
+    for every in clause1:
+        if '!'+every in clause2:
+            literals.append(every)
+    #look for literals in clause2 and their negation in clause1
+    for every in clause2:
+        if '!'+every in clause1:
+           literals.append(every)
+    if len(literals) > 0:
+        return literals
+    return None
+
 #unification step
 def unify():
-    global clause_counter, clausedict, parentdict, curr_clauses
+    global clause_counter, clausedict, parentdict, curr_clauses, steps
     print("\n**UNIFICATION STEP**\
             \nApply unification by providing clause numbers and the variables on which you want to unify, e.g.\
-            \n1:{p(x), q(x)} 2:{!p(a)}\
-            \n>> 1 2 x=a\
-            \n1:{p(x), q(x)} 2:{!p(a)} 3:{q(a)}\
+            \n1:{p(x,y), q(x)} 2:{!p(a,b)}\
+            \n>> 1 2 x=a y=b\
+            \n1:{p(x,y), q(x)} 2:{!p(a,b)} 3:{q(a)}\
             \nEnter 'b' to go back.")
     print_state()
     try:
@@ -175,10 +208,15 @@ def unify():
     except (AssertionError, ValueError):
         print("Invalid Command")
     params = command.split()
-    assert len(params) ==3
+    assert len(params) >=3
     clause1_index = int(params[0])
     clause2_index = int(params[1])
-    uni_var, uni_sub = params[2].split("=")
+    uni_vars = []
+    uni_subs = []
+    for i in range(2,len(params)):
+        uni_var, uni_sub = params[i].split("=")
+        uni_vars.append(uni_var)
+        uni_subs.append(uni_sub)
 
     if (not (1 <= clause1_index <= len(curr_clauses))) or (not (1 <= clause2_index <= len(curr_clauses))):
         print(f"Clause numbers must correspond to existing clauses [1-{len(curr_clauses)}]")
@@ -197,16 +235,19 @@ def unify():
     clause1 = clausedict[clid1]
     clause2 = clausedict[clid2]
 
-    clause3 = set([x.replace(uni_var,uni_sub) for x in clause1])
-    clause4 = set([x.replace(uni_var,uni_sub) for x in clause2])
+    for i in range(len(uni_vars)):
+        clause1 = set([x.replace(uni_vars[i],uni_subs[i]) for x in clause1])
+        clause2 = set([x.replace(uni_vars[i],uni_subs[i]) for x in clause2])
 
-    literal = find_literal(clause3, clause4)
-    if literal is None:
+    literals = find_literals(clause1, clause2)
+    if literals is None:
         print("Unification step did not result in clauses that can be resolved")
         return
-    print('Resolving on :',literal)
-    unification_step(clause3, clause4, clid1, clid2, literal)
-    
+    print('Resolving on :',literals)
+    unification_step(clause1, clause2, clid1, clid2, literals)
+    steps.append(command)
+    actual_clauses = [clausedict[j] for j in curr_clauses]
+    steps.append(f"""{' '.join([f"{i+1}:{'{'+ ', '.join(sorted(list(cl))) + '}' if cl else '{}'}" for i,cl in enumerate(actual_clauses)])}""")    
         
     
 def res():
@@ -230,6 +271,10 @@ Enter 'b' to go back.""")
     assert len(params) == 3
     clause1, clause2, literal = int(params[0]), int(params[1]), params[2]
     proof_step(clause1, clause2, literal)
+    steps.append(command)
+    actual_clauses = [clausedict[j] for j in curr_clauses]
+    steps.append(f"""{' '.join([f"{i+1}:{'{'+ ', '.join(sorted(list(cl))) + '}' if cl else '{}'}" for i,cl in enumerate(actual_clauses)])}""")    
+
 
 # Main resolution checker interface
 def resolve(formula):
