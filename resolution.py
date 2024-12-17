@@ -194,9 +194,9 @@ def unify():
     global clause_counter, clausedict, parentdict, curr_clauses, steps
     print("\n**UNIFICATION STEP**\
             \nApply unification by providing clause numbers and the variables on which you want to unify, e.g.\
-            \n1:{p(x), q(x)} 2:{!p(a)}\
-            \n>> 1 2 x=a\
-            \n1:{p(x), q(x)} 2:{!p(a)} 3:{q(a)}\
+            \n1:{p(x,y), q(x)} 2:{!p(a,b)}\
+            \n>> 1 2 x=a y=b\
+            \n1:{p(x,y), q(x)} 2:{!p(a,b)} 3:{q(a)}\
             \nEnter 'b' to go back.")
     print_state()
     try:
@@ -238,9 +238,6 @@ def unify():
     for i in range(len(uni_vars)):
         clause1 = set([x.replace(uni_vars[i],uni_subs[i]) for x in clause1])
         clause2 = set([x.replace(uni_vars[i],uni_subs[i]) for x in clause2])
-
-    print(clause1)
-    print(clause2)
 
     literals = find_literals(clause1, clause2)
     if literals is None:
